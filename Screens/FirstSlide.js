@@ -12,25 +12,12 @@ import logo from "./1280px-TVS_SCS_Logo-removebg-preview.png";
 const FirstSlide = ({ navigation, route }) => {
   return (
     <View width="100%" height="100%" style={{ backgroundColor: "#f5f5f5" }}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          marginEnd: 35,
-          marginVertical: 15,
-        }}
-      >
-        <TouchableOpacity style={styles.menu}>
-          <Ionicons name={"ios-menu"} size={30} />
-        </TouchableOpacity>
-        <Image style={{ width: 50, height: 50 }} source={logo}></Image>
-      </View>
-      <View style={{ flex: 1, justifyContent: "center" }}>
+      <View style={{marginBottom:130, marginTop: 15}}>
         <Image style={styles.Image} source={header}></Image>
         <Text style={styles.adminText}>admin admin</Text>
       </View>
       <View
-        style={{ flex: 2, justifyContent: "flex-start", alignItems: "center" }}
+        style={{ flex: 5, alignItems: "center" }}
       >
         <View>
           <TouchableOpacity
@@ -46,66 +33,67 @@ const FirstSlide = ({ navigation, route }) => {
                 flexDirection: "row",
                 marginBottom: 10,
                 backgroundColor: "white",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               <Text
                 style={{
-                  paddingTop: 23,
-                  paddingLeft: 15,
-                  paddingRight: 30,
-                  paddingBottom: 23,
-                  fontSize: 20,
-                  fontWeight: "800",
+                  marginHorizontal: 15,
+                  marginVertical: 8,
+                  fontSize: 18,
+                  fontWeight: "700",
                 }}
               >
                 Dispatch
               </Text>
               <Image
                 style={{
-                  width: 35,
-                  height: 35,
-                  marginRight: 15,
-                  marginLeft: 5,
-                  marginTop: 20,
-                  marginBottom: 20,
+                  width: 60,
+                  height: 60,
+                  marginHorizontal:10,
+                  marginVertical: 5,
+                  resizeMode:"stretch"
                 }}
                 source={right}
               ></Image>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={()=>{
-            navigation.navigate("Recieve_DC_First")
-          }}>
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("Recieve_DC_First");
+            }}
+          >
             <View
               style={{
                 borderWidth: 1,
                 borderRadius: 15,
                 borderColor: "#AAAA9F",
                 flexDirection: "row",
-
+                marginBottom: 10,
                 backgroundColor: "white",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
               <Text
                 style={{
-                  paddingTop: 23,
-                  paddingLeft: 15,
-                  paddingRight: 37,
-                  paddingBottom: 23,
-                  fontSize: 20,
-                  fontWeight: "800",
+                  marginHorizontal: 20,
+                  marginVertical: 10,
+                  fontSize: 18,
+                  fontWeight: "700",
                 }}
               >
                 Recieve
               </Text>
               <Image
                 style={{
-                  width: 35,
-                  height: 35,
-                  marginRight: 15,
-                  marginLeft: 5,
-                  marginTop: 20,
-                  marginBottom: 20,
+                  width: 60,
+                  height: 60,
+                  marginHorizontal:10,
+                  marginLeft:10,
+                  resizeMode:"stretch",
+                  marginVertical: 5,
                 }}
                 source={left}
               ></Image>
@@ -114,7 +102,7 @@ const FirstSlide = ({ navigation, route }) => {
         </View>
       </View>
 
-      <StatusBar translucent={false} style="auto" backgroundColor="white" />
+      <StatusBar translucent={false} style="auto" backgroundColor="#f5f5f5" />
     </View>
   );
 };
@@ -122,10 +110,9 @@ const FirstSlide = ({ navigation, route }) => {
 export default FirstSlide;
 
 const styles = StyleSheet.create({
-  text: {},
   adminText: {
-    fontWeight: "900",
-    fontSize: 20,
+    fontWeight: "700",
+    fontSize: 18,
     alignSelf: "center",
   },
   Image: {

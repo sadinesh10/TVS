@@ -16,7 +16,7 @@ import header from "./header_common.png";
 
 const SecondSlide = ({ navigation }) => {
   return (
-    <View width="100%" height="100%" style={{ backgroundColor: "#F9F9F8" }}>
+    <View width="100%" height="100%" style={{ backgroundColor: "#F9F9F8" , paddingBottom:40}}>
       <View
         style={{
           flexDirection: "row",
@@ -59,63 +59,70 @@ const SecondSlide = ({ navigation }) => {
               flexDirection: "row",
               marginBottom: 10,
               backgroundColor: "white",
+              justifyContent:"space-between",
+              alignItems:"center"
             }}
           >
             <Text
               style={{
                 paddingTop: 22,
-                paddingLeft: 15,
-                paddingRight: 30,
+                paddingLeft: 30,
+                paddingRight: 40,
                 paddingBottom: 23,
                 fontSize: 20,
-                fontWeight: "800",
+                fontWeight: "700",
               }}
             >
               Manual
             </Text>
             <Image
               style={{
-                width: 28,
-                height: 25,
-                marginRight: 15,
-                marginLeft: 10,
-                marginTop: 25,
-                marginBottom: 20,
+                width: 35,
+                height: 35,
+                marginVertical:10,
+                marginHorizontal: 18,
+                resizeMode:"stretch"
               }}
               source={pen}
             ></Image>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={()=>{
+            navigation.navigate("Scan_First")
+          }}
+        >
           <View
             style={{
               borderWidth: 1,
               borderRadius: 15,
               borderColor: "#AAAA9F",
               flexDirection: "row",
+              marginBottom: 10,
               backgroundColor: "white",
+              justifyContent:"space-between",
+              alignItems:"center"
             }}
           >
             <Text
               style={{
-                paddingTop: 23,
-                paddingLeft: 15,
+                paddingTop: 22,
+                paddingLeft: 30,
                 paddingRight: 30,
                 paddingBottom: 23,
-                fontSize: 20,
-                fontWeight: "800",
+                fontSize: 18,
+                fontWeight: "700",
               }}
             >
               Scan QR
             </Text>
             <Image
               style={{
-                width: 25,
-                height: 25,
-                marginRight: 15,
-                marginLeft: 5,
-                marginTop: 23,
-                marginBottom: 20,
+                width: 35,
+                height: 35,
+                marginVertical:10,
+                marginHorizontal: 19, 
+                resizeMode:"stretch"
               }}
               source={qr}
             ></Image>
@@ -123,7 +130,7 @@ const SecondSlide = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <StatusBar translucent={false} style="auto" backgroundColor="white" />
+      <StatusBar translucent={false} style="auto" backgroundColor="#F9F9F8" />
     </View>
   );
 };

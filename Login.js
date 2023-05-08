@@ -1,32 +1,50 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-
 import {
+  Alert,
+  Image,
+  Pressable,
+  StatusBar,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  Text,
-  View,
-  Image,
-  StyleSheet,
-  Alert,
+  Keyboard,
 } from "react-native";
-import Logo from "./logo.png";
-import Eye from "./Eye.png";
-import EyeActive from "./EyeActive.png";
+import { Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import AsyncStorageKeys from "./AsyncStorageKeys";
-import { user_login } from "./api/user_api";
+import { useNavigation } from "@react-navigation/native";
+import md5 from "md5";
+import * as Application from "expo-application";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import { setUserData } from "./redux/mainDataSlice";
-
-const LoginScreen = ({ navigation, route }) => {
+import { ActivityIndicator, Modal, Snackbar } from "react-native-paper";
+function Login() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [seePassword, setSeePassword] = useState(true);
   const [checkValidEmail, setCheckValidEmail] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const onToggleSnackBar = () => setVisible(true);
+  const onDismissSnackBar = setTimeout(() => {
+    setVisible(false);
+  }, 2000);
+  const [visible1, setVisible1] = useState(false);
+  const onToggleSnackBar1 = () => setVisible1(true);
+  const onDismissSnackBar1 = setTimeout(() => {
+    setVisible1(false);
+  }, 2000);
 
-  const { userData, recipes } = useSelector((state) => state.mainReducer);
+  const [visible2, setVisible2] = useState(false);
+  const onToggleSnackBar2 = () => setVisible2(true);
+  const onDismissSnackBar2 = setTimeout(() => {
+    setVisible2(false);
+  }, 2000);
+  const [visible3, setVisible3] = useState(false);
+  const onToggleSnackBar3 = () => setVisible3(true);
+  const onDismissSnackBar3 = setTimeout(() => {
+    setVisible3(false);
+  }, 2000);
+  const uniqueId = Application.androidId;
 
   const handleCheckEmail = (text) => {
     let re = /\S+@\S+\.\S+/;
@@ -39,7 +57,6 @@ const LoginScreen = ({ navigation, route }) => {
       setCheckValidEmail(true);
     }
   };
-
   const checkPasswordValidity = (value) => {
     const isNonWhiteSpace = /^\S*$/;
     if (!isNonWhiteSpace.test(value)) {
@@ -74,134 +91,188 @@ const LoginScreen = ({ navigation, route }) => {
 
     return null;
   };
-
   const onSubmit = async () => {
-    // try {
-    //   const response = await axios.post(
-    //     "https://large-toys-happen-122-175-16-209.loca.lt/login",
-    //     {
-    //       email: email,
-    //       password: password,
-    //     }
-    //   );
-    //   const data = response.data;
-    //   console.log(data);
+    try {
+      if (email === "") {
+        return onToggleSnackBar();
+      } else if (password === "") {
+        return onToggleSnackBar1();
+      }
+      const response = await axios.post(
+        "http://vulcantunnel.com:5007/user/auth/signin",
+        {
+          username: email,
+          password: md5(password),
+          device_token: "12345",
+          device_unique_id: uniqueId,
+          device_type: "1",
+          version_no: "1.0",
+        }
+      );
+      const data = response?.data;
+      console.log(data);
+      await AsyncStorage.setItem(
+        AsyncStorageKeys.userData,
+        JSON.stringify(data)
+      );
 
-    //   if (data?.successful) {
-    //     await AsyncStorage.setItem(
-    //       AsyncStorageKeys.userData,
-    //       JSON.stringify(data.data)
-    //     );
-    //     navigation.replace("Home");
-    //     let userObj={
-    //       email:email,
-    //       password:password
-    //     }
-    //     dispatch(setUserData(userObj))
-    //   } else {
-    //     Alert.alert("Login failed", data?.msg);
-    //   }
+      navigation.replace("Splash");
+    } catch (e) {
+      const message = e?.response?.data?.errMessage;
+      if (message != "") {
+        return onToggleSnackBar2();
+      } else if (message == "Something went wrong") {
+        return onToggleSnackBar3();
+      }
 
-    // } catch (e) {
-    //   Alert.alert("Error", "An Unknown error: " + e);
-    // }
-    let userObj = {
-      email: email,
-      password: password,
-      phone_number: 8919567672,
-      image_uri:"https://images.pexels.com/photos/620337/pexels-photo-620337.jpeg?cs=srgb&dl=pexels-tobi-620337.jpg&fm=jpg",
-      gender:"Male",
-      name:"Sai Dinesh",
-      coins:47,
-      token:"Token 9c8b06d329136da358c2d00e76946b0111ce2c48",
-    };
-    AsyncStorage.setItem(AsyncStorageKeys.userData,JSON.stringify(userObj))
-    navigation.replace("Splash");
-  };
-
-  async function handleLogin() {
-    const checkPassword = checkPasswordValidity;
-    if (checkPassword) {
-      user_login({
-        email: email,
-        password: password,
-      })
-        .then((result) => {
-          console.log(result);
-          if (result.status == 200) {
-            AsyncStorage.setItem("AccessToken", result.data.api_token);
-          }
-          navigation.replace("Home");
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-    } else {
-      alert(checkPassword);
+      //Alert.alert("Error", message || "Something went wrong");
+      console.log(response.data.password);
     }
-  }
-
+    // let userObj = [
+    //   {
+    //     email: email,
+    //     password: password,
+    //   },
+    // ];
+    // AsyncStorage.setItem(AsyncStorageKeys.userData, JSON.stringify(userObj));
+    // navigation.replace("Splash");
+  };
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcome}>WELCOME</Text>
-      <Image style={styles.logo} source={Logo}></Image>
-      <View style={styles.wrapperInput}>
-        <StatusBar translucent={false} style="auto" backgroundColor="white" />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={(text) => handleCheckEmail(text)}
-        />
-      </View>
-      {checkValidEmail ? (
-        <Text style={styles.textFailed}>Wrong format email</Text>
-      ) : (
-        <Text style={styles.textFailed}> </Text>
-      )}
-      <View style={styles.wrapperInput}>
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          secureTextEntry={seePassword}
-          onChangeText={(text) => setPassword(text)}
-        />
-        <TouchableOpacity
-          style={styles.wrapperIcon}
-          onPress={() => setSeePassword(!seePassword)}
+    <Pressable onPress={()=>Keyboard.dismiss()}> 
+      <View
+        style={{ width: "100%", height: "100%", backgroundColor: "#f5f5f5" }}
+      >
+        <Text
+          style={{
+            fontSize: 35,
+            fontWeight: "700",
+            marginTop: 35,
+            marginLeft: 20,
+            marginBottom: 5,
+            color: "#243a72",
+          }}
         >
-          <Image source={seePassword ? Eye : EyeActive} style={styles.icon} />
-        </TouchableOpacity>
-      </View>
-      {email == "" || password == "" || checkValidEmail == true ? (
-        <TouchableOpacity
-          disabled
-          style={styles.buttonDisable}
-          onPress={onSubmit}
+          Login
+        </Text>
+        <Text
+          style={{
+            fontSize: 16,
+            fontWeight: "400",
+            marginLeft: 20,
+            marginBottom: 20,
+          }}
         >
-          <Text style={styles.text}>Login</Text>
-        </TouchableOpacity>
-      ) : (
-        <TouchableOpacity style={styles.button} onPress={onSubmit}>
-          <Text style={styles.text}>Login</Text>
-        </TouchableOpacity>
-      )}
-    </View>
+          Login here to use the app
+        </Text>
+        <View style={{ flex: 1, justifyContent: "center", marginTop: 15 }}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "200",
+              marginLeft: 15,
+              marginBottom: 8,
+            }}
+          >
+            Username
+          </Text>
+          <View style={styles.wrapperInput}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Username"
+              value={email}
+              onChangeText={(text) => setEmail(text)}
+            />
+          </View>
+
+          <View>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "200",
+                marginLeft: 15,
+                marginBottom: 8,
+              }}
+            >
+              Password
+            </Text>
+          </View>
+          <View style={styles.wrapperInput}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Password"
+              value={password}
+              secureTextEntry={seePassword}
+              onChangeText={(text) => setPassword(text)}
+            />
+            <TouchableOpacity
+              style={styles.wrapperIcon}
+              onPress={() => setSeePassword(!seePassword)}
+            >
+              <Image
+                source={
+                  seePassword
+                    ? require("./Eye.png")
+                    : require("./EyeActive.png")
+                }
+                style={styles.icon}
+              />
+            </TouchableOpacity>
+          </View>
+          <Text style={{ alignSelf: "flex-end", color: "#243a72", margin: 15 }}>
+            Forgot Password ?
+          </Text>
+        </View>
+        <View>
+          <Pressable
+            style={{
+              alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 12,
+            paddingHorizontal: 32,
+            borderRadius: 10,
+            backgroundColor: "#243a70",
+            marginHorizontal: 25,
+           marginVertical: 25,
+            }}
+            onPress={() => {
+              onSubmit();
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                lineHeight: 21,
+                fontWeight: "bold",
+                letterSpacing: 0.25,
+                color: "white",
+              }}
+            >
+              Login
+            </Text>
+          </Pressable>
+
+          <Snackbar visible={visible} onDismiss={onDismissSnackBar}>
+            Please Enter UserName
+          </Snackbar>
+          <Snackbar visible={visible1} onDismiss={onDismissSnackBar1}>
+            Please Enter Password
+          </Snackbar>
+          <Snackbar visible={visible2} onDismiss={onDismissSnackBar2}>
+            Incorrect UserName/Password
+          </Snackbar>
+          <Snackbar visible={visible3} onDismiss={onDismissSnackBar3}>
+            Something went wrong
+          </Snackbar>
+        </View>
+        <StatusBar translucent={false} style="auto" backgroundColor="#f5f5f5" />
+      </View>
+    </Pressable>
   );
-};
+}
+
+export default Login;
 
 const styles = StyleSheet.create({
-  welcome: {
-    fontWeight: "bold",
-    fontSize: 23,
-    alignSelf: "center",
-  },
-  logo: {
-    width: 400,
-    height: 270,
-    alignSelf: "center",
-  },
   container: {
     flex: 1,
     justifyContent: "center",
@@ -210,11 +281,16 @@ const styles = StyleSheet.create({
   },
   wrapperInput: {
     borderWidth: 0.5,
-    borderRadius: 5,
-    borderColor: "grey",
-    marginTop: 10,
+    borderRadius: 15,
+    borderColor: "black",
+    marginTop: 2,
+    marginHorizontal: 15,
+    marginBottom: 15,
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#ffffff",
+    fontSize: 18,
+    padding: 1,
   },
   input: {
     padding: 10,
@@ -222,28 +298,28 @@ const styles = StyleSheet.create({
   },
   wrapperIcon: {
     position: "absolute",
-    right: 0,
+    right: 10,
     padding: 10,
   },
   icon: {
-    width: 30,
-    height: 24,
+    width: 20,
+    height: 15,
   },
   button: {
     padding: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "orange",
-    borderRadius: 5,
-    marginTop: 25,
+    backgroundColor: "#243a72",
+    borderRadius: 10,
+    margin: 20,
   },
   buttonDisable: {
     padding: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "grey",
-    borderRadius: 5,
-    marginTop: 25,
+    backgroundColor: "#243a72",
+    borderRadius: 10,
+    margin: 20,
   },
   text: {
     color: "white",
@@ -254,4 +330,3 @@ const styles = StyleSheet.create({
     color: "red",
   },
 });
-export default LoginScreen;

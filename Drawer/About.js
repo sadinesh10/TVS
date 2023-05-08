@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function Settings() {
+export default function About() {
   return (
     <View
       style={{
@@ -11,7 +11,7 @@ export default function Settings() {
         backgroundColor: "#F9F9F8",
       }}
     >
-      <Text>No Settings added</Text>
+      <Text>No Damaged Assets</Text>
     </View>
   );
 }

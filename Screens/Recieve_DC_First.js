@@ -15,10 +15,9 @@ import qr from "./qr-code.png";
 import header from "./header_common.png";
 import success from "./success-standard-solid.png";
 
-
-function Recieve_DC_First({navigation}) {
+function Recieve_DC_First({ navigation }) {
   return (
-    <View width="100%" height="100%" style={{ backgroundColor: "#F9F9F8" }}>
+    <View width="100%" height="100%" style={{ backgroundColor: "#F9F9F8", paddingBottom: 40 }}>
       <View
         style={{
           flexDirection: "row",
@@ -47,10 +46,11 @@ function Recieve_DC_First({navigation}) {
         <Text style={{ fontSize: 20, marginTop: 7 }}>admin admin</Text>
       </View>
 
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", }}>
-        <TouchableOpacity onPress={() => {
-              navigation.navigate("Recieve_DC_Second");
-            }}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Recieve_DC_Second");
+          }}
         >
           <View
             style={{
@@ -58,7 +58,7 @@ function Recieve_DC_First({navigation}) {
               borderRadius: 15,
               borderColor: "#AAAA9F",
               flexDirection: "row",
-              marginBottom:10,
+              marginBottom: 10,
               backgroundColor: "white",
             }}
           >
@@ -66,7 +66,7 @@ function Recieve_DC_First({navigation}) {
               style={{
                 paddingTop: 21,
                 paddingLeft: 15,
-                paddingRight: 30,
+                paddingRight: 20,
                 paddingBottom: 23,
                 fontSize: 20,
                 fontWeight: "800",
@@ -76,20 +76,21 @@ function Recieve_DC_First({navigation}) {
             </Text>
             <Image
               style={{
-                width: 30,
-                height: 30,
+                width: 35,
+                height: 36,
                 marginRight: 15,
                 marginLeft: 5,
-                marginTop: 22,
-                marginBottom: 20,
+                marginTop: 17,
+                marginBottom: 15,
+                resizeMode:"stretch"
               }}
               source={success}
             ></Image>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity 
-          onPress={()=>{
-            navigation.navigate("Recieve_DC_Second")
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Recieve_Scan_First");
           }}
         >
           <View
@@ -103,24 +104,26 @@ function Recieve_DC_First({navigation}) {
           >
             <Text
               style={{
-                paddingTop: 23,
+                paddingTop: 20,
                 paddingLeft: 20,
-                paddingRight: 53,
+                paddingRight: 38,
                 paddingBottom: 23,
                 fontSize: 20,
                 fontWeight: "800",
+                
               }}
             >
               Scan QR Code
             </Text>
             <Image
               style={{
-                width: 25,
-                height: 25,
+                width: 35,
+                height: 35,
                 marginRight: 15,
                 marginLeft: 1,
-                marginTop: 23,
-                marginBottom: 20,
+                marginTop: 17,
+                marginBottom: 15,
+                resizeMode:"stretch"
               }}
               source={qr}
             ></Image>
@@ -128,31 +131,30 @@ function Recieve_DC_First({navigation}) {
         </TouchableOpacity>
       </View>
 
-      <StatusBar translucent={false} style="auto" backgroundColor="white" />
+      <StatusBar translucent={false} style="auto" backgroundColor="#F9F9F8" />
     </View>
-    )
+  );
 }
 
-export default Recieve_DC_First
+export default Recieve_DC_First;
 
 const styles = StyleSheet.create({
-    text: {
-      fontSize: 20,
-      fontWeight: "900",
-      borderWidth: 1,
-      borderColor: "#AAAA9F",
-      borderRadius: 15,
-      padding: 20,
-      marginVertical: 8,
-      backgroundColor: "white",
-    },
-    menu: {
-      marginStart: 30,
-      marginTop: 10,
-    },
-    Image: {
-      width: 20,
-      height: 20,
-    },
-  });
-  
+  text: {
+    fontSize: 20,
+    fontWeight: "900",
+    borderWidth: 1,
+    borderColor: "#AAAA9F",
+    borderRadius: 15,
+    padding: 20,
+    marginVertical: 8,
+    backgroundColor: "white",
+  },
+  menu: {
+    marginStart: 30,
+    marginTop: 10,
+  },
+  Image: {
+    width: 20,
+    height: 20,
+  },
+});

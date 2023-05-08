@@ -1,3 +1,6 @@
-export default {
-    userData: '_userdata_'
-}
+export default 
+    {
+        userData: "_userdata_",
+        getRole:"_role_",
+    }
+

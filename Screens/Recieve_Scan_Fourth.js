@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useInsertionEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 
 import { Image, Text, TouchableOpacity, View } from "react-native";
@@ -6,7 +6,7 @@ import success from "./success-standard-solid.png";
 import cross from "./cancel.png";
 import { styles } from "../util";
 
-function Recieve_DC_Fourth({ navigation }) {
+function Recieve_Scan_Fourth({ navigation }) {
   useEffect(() => {
     navigation.getParent().setOptions({
       tabBarStyle: {
@@ -70,4 +70,4 @@ function Recieve_DC_Fourth({ navigation }) {
   );
 }
 
-export default Recieve_DC_Fourth;
+export default Recieve_Scan_Fourth;

@@ -24,6 +24,8 @@ import {
   setAssetDetails,
   setAssetsSelectedProjectName,
   setHoldDispatch,
+  setRecievedSelectedDCAssets,
+  setRecievedSelectedDCDetails,
 } from "../redux/mainDataSlice";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -48,9 +50,13 @@ function Scan_Third({ navigation }) {
     driverNo,
     lrNo,
     holdDispatch,
-    transaction_id
-  } = useSelector((state) => state.mainReducer);
+    transaction_id,
+    recieve_selected_dc_number,
+    recieve_selected_dc_details,
+    recieve_selected_dc_assets
 
+  } = useSelector((state) => state.mainReducer);
+  console.log("Asset Details"+recieve_selected_dc_assets)
   const [scanned, setScanned] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
   const [assert, setAssert] = useState([]);
@@ -123,22 +129,56 @@ function Scan_Third({ navigation }) {
     console.log("hello");
   };
 
-  const assetsQunatity = async (dupasset, modifiedAssets) => {
-    console.log("asset quantity: " + dupasset);
+  // const assetsQunatity = async (dupasset, modifiedAssets) => {
+  //   console.log("asset quantity: " + dupasset);
 
+  //   try {
+  //     const userDataString = await AsyncStorage.getItem(
+  //       AsyncStorageKeys.userData
+  //     );
+  //     const userData = JSON.parse(userDataString);
+
+  //     const SelectedAssetQuantity = await axios.post(
+  //       "http://vulcantunnel.com:5007/user/assets/assetdata",
+  //       {
+  //         asset_ref_no: dupasset || assetsSelectedProjectName,
+  //         customer_security_id: projectSecurityId,
+  //         from_location_id: selectedFrom.location_id,
+  //         create_date_time: date_time,
+  //       },
+  //       {
+  //         headers: {
+  //           "x-access-token": userData?.token,
+  //           "device-type": "MOBILE",
+  //         },
+  //       }
+  //     );
+  //     const details = SelectedAssetQuantity?.data;
+  //     if (modifiedAssets) {
+  //       dispatch(setAssetDetails([...modifiedAssets, details]));
+  //     } else {
+  //       dispatch(setAssetDetails([...assetDetails, details]));
+  //     }
+  //     console.log("sub" + JSON.stringify(details));
+  //     setTimeout(() => {
+  //       setScanned(false);
+  //     }, 4000);
+      
+  //   } catch (e) {
+  //     Alert.alert(e?.message);
+  //   }
+  // };
+  const DCDetails = async () => {
     try {
       const userDataString = await AsyncStorage.getItem(
         AsyncStorageKeys.userData
       );
       const userData = JSON.parse(userDataString);
 
-      const SelectedAssetQuantity = await axios.post(
-        "http://vulcantunnel.com:5007/user/assets/assetdata",
+      const Recieve_Details = await axios.post(
+        "http://vulcantunnel.com:5007/user/transaction/getDetails",
         {
-          asset_ref_no: dupasset || assetsSelectedProjectName,
-          customer_security_id: projectSecurityId,
-          from_location_id: selectedFrom.location_id,
-          create_date_time: date_time,
+          reference_number: recieve_selected_dc_number,
         },
         {
           headers: {
@@ -147,21 +187,45 @@ function Scan_Third({ navigation }) {
           },
         }
       );
-      const details = SelectedAssetQuantity?.data;
-      if (modifiedAssets) {
-        dispatch(setAssetDetails([...modifiedAssets, details]));
-      } else {
-        dispatch(setAssetDetails([...assetDetails, details]));
-      }
-      console.log("sub" + JSON.stringify(details));
-      setTimeout(() => {
-        setScanned(false);
-      }, 4000);
-      
+      const details = Recieve_Details?.data;
+      console.log(details);
+      dispatch(setRecievedSelectedDCDetails(details))
+      RecieveAsset()
     } catch (e) {
-      Alert.alert(e?.message);
+      Alert.alert(e.message);
     }
   };
+  const RecieveAsset = async () => {
+    try {
+      const userDataString = await AsyncStorage.getItem(
+        AsyncStorageKeys.userData
+      );
+      const userData = JSON.parse(userDataString);
+
+      const Recieve_Details = await axios.post(
+        "http://vulcantunnel.com:5007/user/transaction/getDetails",
+        {
+          transaction_id:recieve_selected_dc_details.dispatchitems[0].transaction_id,
+          asset_ref_no:recieve_selected_dc_details.dispatchitems[0].asset_ref_no
+        },
+        {
+          headers: {
+            "x-access-token": userData?.token,
+            "device-type": "MOBILE",
+          },
+        }
+      );
+      const details = Recieve_Details?.data;
+      console.log("Recieve Assets"+JSON.stringify(details));
+      dispatch(setRecievedSelectedDCAssets(details))
+    } catch (e) {
+      Alert.alert(e.message);
+    }
+  };
+
+  useEffect(() => {
+    DCDetails()
+  }, []);
 
   if (hasPermission === null) {
     return <Text>Requesting for camera permission</Text>;
@@ -207,7 +271,7 @@ function Scan_Third({ navigation }) {
       formData.append("to_location_id", selectedTo.location_id);
       formData.append("vehicle_no", vehicleNo);
       formData.append("lr_number", lrNo);
-      formData.append("current_status", "3");
+      formData.append("current_status", "4");
       formData.append("transaction_type", "q");
       formData.append("created_by", projectSecurityId);
       formData.append("update_date_time", date_time);
@@ -256,7 +320,7 @@ function Scan_Third({ navigation }) {
             if (assetDetails.length != 0) {
               return setBackModel(true);
             }
-            navigation.navigate("Scan_Second");
+            navigation.navigate("Recieve_Scan_First");
           }}
         >
           <MaterialIcons name={"arrow-back-ios"} size={25} />
@@ -1008,7 +1072,7 @@ function Scan_Third({ navigation }) {
           if (assetDetails.length==0) {
             return onToggleSnackBar();
           }
-          navigation.navigate("Scan_Fourth");
+          navigation.navigate("Recieve_Scan_Third");
         }}
       >
         <Text

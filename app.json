@@ -1,10 +1,11 @@
 {
   "expo": {
-    "name": "Food2Fork",
+    "name": "TVS",
     "slug": "Food2Fork",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+
+    "icon": "./Screens/TVS_Logo.png",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
@@ -17,8 +18,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow Food2Fork to access camera.",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone"
+        "NSCameraUsageDescription": "Allow TVS to access camera.",
+        "NSMicrophoneUsageDescription": "Allow TVS to access your microphone"
       }
     },
     "android": {
@@ -38,9 +39,14 @@
       [
         "expo-barcode-scanner",
         {
-          "cameraPermission": "Allow Food2Fork to access camera."
+          "cameraPermission": "Allow TVS to access camera."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e38503dd-56ac-4c12-9ddb-bb40699c9bc8"
+      }
+    }
   }
 }

@@ -1,7 +1,10 @@
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -15,6 +18,10 @@ import right from "./vehicle_right.png";
 import numberPlate from "./AB12.png";
 import calendar from "./date-solid.png";
 import { ScrollView, TextInput } from "react-native-gesture-handler";
+import { useDispatch, useSelector } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import AsyncStorageKeys from "../AsyncStorageKeys";
+import { setHoldDispatch } from "../redux/mainDataSlice";
 
 const array = [
   "S.No",
@@ -24,8 +31,6 @@ const array = [
   "Rate",
   "Weight(KG)",
 ];
-const array1 = ["1", "FMC-MBA", "73102990", "2", "15000", "210.00"];
-const array2 = ["Total", "2", "30000", "210.00"];
 const array3 = [
   "S.No",
   "Assert Number",
@@ -33,15 +38,121 @@ const array3 = [
   "Reference 1",
   "reference 2",
 ];
-const array4 = ["1", "FMC-MB400002", "8"];
+
 function SeventhSlide({ navigation }) {
+  const [open, SetOpen] = useState(true);
+
+  const {
+    userData,
+    projectSecurityId,
+    selectedFrom,
+    selectedTo,
+    date_time,
+    vehicleNo,
+    driverNo,
+    lrNo,
+    assetsProjectName,
+    assetsSelectedProjectName,
+    assetDetails,
+    transaction_id,
+  } = useSelector((state) => state.mainReducer);
+  console.log(userData)
+  console.log("Details" + JSON.stringify(assetDetails));
+  const total_qunatity = assetDetails.reduce((total, current) => {
+    return total + current.asset.quantity;
+  }, 0);
+  const total_cost = assetDetails.reduce((total, current) => {
+    return total + current.asset.cost;
+  }, 0);
+  const total_weight = assetDetails.reduce((total, current) => {
+    return total + current.asset.asset_weight;
+  }, 0);
+  const array2 = ["Total", total_qunatity, total_cost, total_weight];
+
+  const generate = async () => {
+    try {
+      SetOpen(true)
+      const userDataString = await AsyncStorage.getItem(
+        AsyncStorageKeys.userData
+      );
+      console.log("my asset" + assetDetails);
+
+      const assetsString = JSON.stringify(
+        assetDetails?.map((value, index) => {
+          console.log(value);
+          return {
+            asset_ref_no: value.asset.asset_ref_no,
+            quantity: value.asset.quantity,
+            is_valid: 1,
+            cost: value.asset.cost,
+            subassets: value.subassets.map((element, key) => {
+              return {
+                sub_asset: element.sub_asset,
+                quantity: element.quantity,
+                actual_quantity: element.actual_quantity,
+                subasset_hsn_code: element.subasset_hsn_code,
+                subasset_rate: element.subasset_rate,
+              };
+            }),
+          };
+        })
+      );
+
+      const userData = JSON.parse(userDataString);
+      const formData = new FormData();
+      formData.append("customer_security_id", projectSecurityId);
+      formData.append("from_location_id", selectedFrom.location_id);
+      formData.append("to_location_id", selectedTo.location_id);
+      formData.append("vehicle_no", vehicleNo);
+      formData.append("lr_number", lrNo);
+      formData.append("current_status", 1);
+      formData.append("transaction_type", "m");
+      formData.append("created_by", userData.security_id);
+      formData.append("update_date_time", date_time);
+      formData.append("remark", "");
+      formData.append("driver_no", driverNo);
+      formData.append("challan_file", "");
+      formData.append("transaction_id", transaction_id ? transaction_id : "");
+      formData.append("assets", assetsString);
+
+      const DispatchHold = await fetch(
+        "http://vulcantunnel.com:5007/user/transaction/dispatch/add",
+        {
+          method: "POST",
+          headers: {
+            "x-access-token": userData?.token,
+            "device-type": "MOBILE",
+            "Content-Type": "multipart/form-data",
+          },
+          body: formData,
+        }
+      );
+      const hold = await DispatchHold?.json();
+      if (hold.errMessage) {
+        Alert.alert(JSON.stringify(hold?.errMessage));
+      } else {
+        null;
+      }
+      //dispatch(setHoldDispatch([...holdDispatch, hold]));
+
+      console.log("Dispatch_Hold" + JSON.stringify(hold));
+      console.log("String" + JSON.stringify(hold));
+      SetOpen(false)
+    } catch (e) {
+      Alert.alert(e.message);
+    }
+  };
   return (
     <ScrollView
       width="100%"
       height="100%"
       style={{ backgroundColor: "#F9F9F8" }}
+      contentContainerStyle={{
+        paddingBottom: 80,
+      }}
     >
-      <StatusBar translucent={false} style="auto" backgroundColor="white" />
+      <StatusBar translucent={false} style="auto" backgroundColor="#F9F9F8" />
+
       <View
         style={{
           flexDirection: "row",
@@ -88,6 +199,7 @@ function SeventhSlide({ navigation }) {
             backgroundColor: "white",
             margin: 15,
             paddingBottom: 10,
+            paddingRight: 10,
           }}
         >
           <View
@@ -110,7 +222,7 @@ function SeventhSlide({ navigation }) {
                   From
                 </Text>
                 <Text style={{ fontSize: 15, fontWeight: "800" }}>
-                  Braken India Private Limited Sitarganj
+                  {selectedFrom.location_name}
                 </Text>
               </View>
             </View>
@@ -126,7 +238,9 @@ function SeventhSlide({ navigation }) {
               ></Image>
               <View style={{ marginTop: 5 }}>
                 <Text style={{ fontWeight: "400", color: "#1b2b99" }}>To</Text>
-                <Text style={{ fontSize: 15, fontWeight: "800" }}>MBA</Text>
+                <Text style={{ fontSize: 15, fontWeight: "800" }}>
+                  {selectedTo.location_name}
+                </Text>
               </View>
             </View>
           </View>
@@ -151,18 +265,18 @@ function SeventhSlide({ navigation }) {
                     Vechile No.
                   </Text>
                   <Text style={{ fontSize: 15, fontWeight: "800" }}>
-                    AP 39 3939
+                    {vehicleNo}
                   </Text>
                 </View>
               </View>
               <View style={{ flex: 1, flexDirection: "row", paddingRight: 35 }}>
                 <Image
                   style={{
-                    width: 25,
-                    height: 25,
+                    width: 23,
+                    height: 20,
                     marginTop: 13,
                     marginBottom: 10,
-                    marginHorizontal: 10,
+                    marginHorizontal: 23,
                     marginLeft: 10,
                   }}
                   source={calendar}
@@ -172,7 +286,7 @@ function SeventhSlide({ navigation }) {
                     OC Date
                   </Text>
                   <Text style={{ fontSize: 15, fontWeight: "800" }}>
-                    2023-03-31
+                    {date_time}
                   </Text>
                 </View>
               </View>
@@ -193,8 +307,9 @@ function SeventhSlide({ navigation }) {
                 flexDirection: "row",
                 alignItems: "center",
                 backgroundColor: "#243a70",
-                borderTopRightRadius:10,
-                borderTopLeftRadius:10,
+                borderTopRightRadius: 20,
+                borderTopLeftRadius: 20,
+                paddingVertical: 6,
               }}
             >
               {array.map((item, index) => {
@@ -216,63 +331,127 @@ function SeventhSlide({ navigation }) {
                 );
               })}
             </View>
-            <View
-              style={{
-                flexDirection: "row",
-              }}
-            >
-              {array1.map((item, index) => {
+            <View>
+              {assetDetails.map((item, index) => {
                 return (
                   <View
                     key={index}
-                    style={{
-                      flex: 1,
-
-                      paddingLeft: 40,
-                      paddingRight: 37,
-                      paddingTop: 5,
-                      paddingBottom: 5,
-                    }}
+                    style={{ flexDirection: "row", paddingVertical: 5 }}
                   >
-                    <Text style={{ fontWeight: "300", textAlign: "left" }}>
-                      {item}
-                    </Text>
+                    <View
+                      style={{
+                        flex: 1,
+                        paddingRight: 20,
+                        paddingLeft: 40,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                      }}
+                    >
+                      <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                        {index + 1}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+
+                        paddingLeft: 20,
+                        paddingRight: 20,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                      }}
+                    >
+                      <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                        {item.asset.asset_name}
+                      </Text>
+                    </View>
+                    {item.assettype[0].hsn_code != null ? (
+                      <View
+                        style={{
+                          flex: 1,
+
+                          paddingLeft: 25,
+                          paddingRight: 40,
+                          paddingTop: 5,
+                          paddingBottom: 5,
+                        }}
+                      >
+                        <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                          {item.assettype[0].hsn_code}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View
+                        style={{
+                          flex: 1,
+
+                          paddingLeft: 25,
+                          paddingRight: 40,
+                          paddingTop: 5,
+                          paddingBottom: 5,
+                        }}
+                      >
+                        <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                          {item.asset_type.hsn_code}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View
+                      style={{
+                        flex: 1,
+
+                        paddingLeft: 30,
+                        paddingRight: 30,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                      }}
+                    >
+                      <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                        {item.asset.quantity}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+
+                        paddingLeft: 35,
+                        paddingRight: 20,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                      }}
+                    >
+                      <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                        {item.asset.cost*item.asset.quantity}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flex: 1,
+
+                        paddingLeft: 60,
+                        paddingRight: 20,
+                        paddingTop: 5,
+                        paddingBottom: 5,
+                      }}
+                    >
+                      <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                        {item.asset.asset_weight}
+                      </Text>
+                    </View>
                   </View>
                 );
               })}
             </View>
-            <View
-              style={{
-                flexDirection: "row",
-              }}
-            >
-              {array1.map((item, index) => {
-                return (
-                  <View
-                    key={index}
-                    style={{
-                      flex: 1,
 
-                      paddingLeft: 40,
-                      paddingRight: 37,
-                      paddingTop: 5,
-                      paddingBottom: 5,
-                    }}
-                  >
-                    <Text style={{ fontWeight: "300", textAlign: "left" }}>
-                      {item}
-                    </Text>
-                  </View>
-                );
-              })}
-            </View>
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 backgroundColor: "#243a72",
                 marginLeft: 250,
-                borderBottomRightRadius:10
+                borderBottomRightRadius: 20,
+                paddingVertical: 5,
               }}
             >
               {array2.map((item, index) => {
@@ -280,7 +459,7 @@ function SeventhSlide({ navigation }) {
                   <View
                     key={index}
                     style={{
-                      paddingLeft: 40,
+                      paddingLeft: 34,
                       paddingRight: 37,
                       paddingTop: 5,
                       paddingBottom: 5,
@@ -317,8 +496,9 @@ function SeventhSlide({ navigation }) {
                   flexDirection: "row",
                   alignItems: "center",
                   backgroundColor: "#243a70",
-                  borderTopLeftRadius:10,
-                  borderTopRightRadius:10,
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  paddingVertical: 6,
                 }}
               >
                 {array3.map((item, index) => {
@@ -342,83 +522,73 @@ function SeventhSlide({ navigation }) {
               </View>
             </View>
             <View style={{ justifyContent: "space-evenly" }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                {array4.map((item, index) => {
+              <View>
+                {assetDetails.map((item, index) => {
                   return (
-                    <View
-                      key={index}
-                      style={{
-                        flex: 1,
-                        paddingLeft: 25,
-                        paddingRight: 25,
-                        paddingTop: 5,
-                        paddingBottom: 5,
-                      }}
-                    >
-                      <Text style={{ fontWeight: "300" }}>{item}</Text>
-                    </View>
-                  );
-                })}
-                <TextInput
-                  style={{
-                    flex: 1,
-                    borderWidth: 1,
-                    borderRadius: 10,
-                    width:100
-                  }}
-                ></TextInput>
-                <TextInput
-                  style={{
-                    borderWidth: 1,
-                    width:105,
+                    <View key={index} style={{ flexDirection: "row" }}>
+                      <View
+                        style={{
+                          flex: 1,
+                          paddingRight: 20,
+                          paddingLeft: 35,
+                          paddingTop: 10,
+                          paddingBottom: 5,
+                        }}
+                      >
+                        <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          flex: 1,
 
-                    borderRadius: 10,
-                  }}
-                ></TextInput>
-              </View>
-            </View>
-            <View style={{ justifyContent: "flex-start" }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                }}
-              >
-                {array4.map((item, index) => {
-                  return (
-                    <View
-                      key={index}
-                      style={{
-                        flex: 1,
-                        paddingLeft: 25,
-                        paddingRight: 25,
-                        paddingTop: 5,
-                        paddingBottom: 5,
-                      }}
-                    >
-                      <Text style={{ fontWeight: "300" }}>{item}</Text>
+                          paddingLeft: 50,
+                          paddingRight: 30,
+                          paddingTop: 10,
+                          paddingBottom: 5,
+                        }}
+                      >
+                        <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                          {item.asset.asset_name}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={{
+                          flex: 1,
+
+                          paddingLeft: 30,
+                          paddingRight: 30,
+                          paddingTop: 10,
+                          paddingBottom: 5,
+                        }}
+                      >
+                        <Text style={{ fontWeight: "300", textAlign: "left" }}>
+                          {item.asset.quantity}
+                        </Text>
+                      </View>
+                      <TextInput
+                        style={{
+                          flex: 1,
+                          borderWidth: 1,
+                          width: 100,
+                          borderRadius: 10,
+                          paddingVertical: 6,
+                        }}
+                      ></TextInput>
+                      <TextInput
+                        style={{
+                          flex: 1,
+                          borderWidth: 1,
+                          width: 100,
+                          borderRadius: 10,
+                          paddingVertical: 6,
+                        }}
+                      ></TextInput>
                     </View>
                   );
                 })}
-                <TextInput
-                  style={{
-                    flex: 1,
-                    borderWidth: 1,
-                    width:100,
-                    borderRadius: 10,
-                  }}
-                ></TextInput>
-                <TextInput
-                  style={{
-                    borderWidth: 1,
-                    width:105,
-                    borderRadius: 10,
-                  }}
-                ></TextInput>
               </View>
             </View>
           </View>
@@ -449,7 +619,7 @@ function SeventhSlide({ navigation }) {
             borderColor: "#AAAA9F",
             backgroundColor: "white",
             borderRadius: 8,
-            paddingBottom: 100,
+            paddingBottom: 150,
             paddingLeft: 10,
             paddingRight: 10,
           }}
@@ -464,9 +634,11 @@ function SeventhSlide({ navigation }) {
             paddingHorizontal: 32,
             borderRadius: 10,
             backgroundColor: "#243a70",
-            margin: 10,
+            marginHorizontal: 30,
           }}
           onPress={() => {
+            generate();
+            navigation.pop(4);
             navigation.navigate("EightSlide");
           }}
         >
@@ -482,6 +654,31 @@ function SeventhSlide({ navigation }) {
             Generate
           </Text>
         </Pressable>
+        {!open ? (
+          <Modal visible={open} transparent={true} style={{}}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  padding: 15,
+                  borderRadius: 16,
+                  elevation: 8,
+                  backgroundColor: "white",
+                }}
+              >
+                <ActivityIndicator
+                  size={"large"}
+                  color="blue"
+                ></ActivityIndicator>
+              </View>
+            </View>
+          </Modal>
+        ) : null}
       </View>
     </ScrollView>
   );

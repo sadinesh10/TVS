@@ -1,11 +1,27 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import success from "./success-standard-solid.png";
 import cross from "./cancel.png";
+import { styles } from "../util";
 
-function EightSlide({ navigation }) {
+function EightSlide({ navigation, route }) {
+  useEffect(() => {
+    navigation.getParent().setOptions({
+      tabBarStyle: {
+        display: "none",
+      },
+    });
+
+    return () => {
+      navigation.getParent().setOptions({
+        tabBarStyle: {
+          ...styles
+        },
+      });
+    };
+  }, []);
   return (
     <View style={{ width: "100%", height: "100%", backgroundColor: "#243a72" }}>
       <View
@@ -21,7 +37,7 @@ function EightSlide({ navigation }) {
       >
         <TouchableOpacity
           onPress={() => {
-            navigation.pop(5);
+            navigation.goBack();
           }}
         >
           <Image
